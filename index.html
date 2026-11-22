@@ -153,6 +153,7 @@ section.block{padding-block:40px 0}
 .th .tc{font-family:var(--font-num);font-size:12px;color:var(--muted);text-align:right;line-height:1.2}
 .th .tc{font-size:10px;letter-spacing:.1em}
 .th .tc b{display:block;font-size:22px;letter-spacing:0;font-weight:300;color:var(--ink)}
+.lk{display:inline-flex;align-items:center;gap:6px;margin:10px 0 2px;padding:5px 12px;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--muted);font:inherit;font-size:13px;cursor:pointer}.lk.on{color:var(--ink);border-color:var(--ink)}.lk b{font-family:var(--font-num);font-weight:700}
 .items{list-style:none;margin:0;padding:0 18px}
 .item{border-top:1px solid var(--line)}
 .item:first-child{border-top:0}
@@ -474,9 +475,12 @@ const banner=t=>{if(!t.colors)return "";const [l,r]=t.title.split("×");
   <span class="bl">${esc(l||"")}</span><span class="bm">${t.score?`<b>${esc(t.score)}</b>`:BALL}</span><span class="br">${esc(r||"")}</span></div>`};
 const tbar=t=>`<div class="tbar"><span class="tdt">${t.date?md(t.date):""}${t.kickoff?" "+esc(t.kickoff):""}</span>${t.comp?`<span class="tcp">${esc(t.comp)}</span>`:""}</div>`;
 const tinfo=t=>`<span class="tinfo">${t.place?esc(t.place):""}</span>`;
+const GC="jsapo-vote";/* GoatCounterのコード（https://◯◯.goatcounter.com の◯◯）。空なら計測もいいねも出ない */
+const lkId=p=>"like-"+(p.post?String(p.post).split("/").pop():encodeURIComponent(p.q).slice(0,40).replace(/%/g,""));
+const lkBtn=p=>GC?`<button type="button" class="lk" data-id="${lkId(p)}">♡ いいね <b></b></button>`:"";
 const pbox=p=>{const live=!p.votes;
   return `<div class="pbox${live?" live":""}"><div class="pmeta">${live?'<span class="tagx tag-live">LIVE</span>':(p.final===false?'<span class="tagx tag-mid">LIVE</span>':"")}<span>${span(p)}</span></div><p class="pq2">${esc(p.q)}</p>
-  ${live?`<ul class="popts">${p.opts.map((o,i)=>`<li style="box-shadow:inset 3px 0 0 ${COL[i]}">${esc(o)}</li>`).join("")}</ul>${p.post?`<div class="acts">${xBtn(p,true)}</div>`:""}`:`${result(p,false)}${totalLine(p)}`}${kComment(p)}${voices(p)}</div>`};
+  ${live?`<ul class="popts">${p.opts.map((o,i)=>`<li style="box-shadow:inset 3px 0 0 ${COL[i]}">${esc(o)}</li>`).join("")}</ul>${p.post?`<div class="acts">${xBtn(p,true)}</div>`:""}`:`${result(p,false)}${totalLine(p)}${lkBtn(p)}`}${kComment(p)}${voices(p)}</div>`};
 const luList=a=>`<ol>${a.map(x=>`<li><span class="lno">${esc(x[1])}</span><span class="lpos">${esc(x[0])}</span><span class="lnm">${esc(x[2])}</span></li>`).join("")}</ol>`;
 const lu=t=>!(t.lineup&&t.lineup.length)?"":t.lineup.length>1?`<details class="xv lu"><summary class="xvh lubtn"><span>LINEUP</span></summary><div class="lucols two">${t.lineup.map(L=>`<div><p class="lut">${esc(L.team)}</p><p class="lus">STARTING XI</p>${luList(L.start)}<p class="lus">SUBS</p>${luList(L.subs||[])}</div>`).join("")}</div></details>`:`<details class="xv lu"><summary class="xvh lubtn"><span>LINEUP</span></summary>${t.lineup.map(L=>`<div class="lucols"><div><p class="lus">STARTING XI</p>${luList(L.start)}</div><div><p class="lus">SUBS</p>${luList(L.subs||[])}</div></div>`).join("")}</details>`;
 const gl=t=>{if(!t.goals||!t.goals.length)return "";const one=g=>`<span class="gn">${esc(g.name)}${g.pk?" (PK)":""}</span>${g.ast?`<span class="ga">アシスト ${esc(g.ast)}</span>`:""}`;
@@ -521,7 +525,7 @@ const xv=t=>t.xvoices&&t.xvoices.length?`<div class="xv"><p class="xvh"><span>VO
     if(p.plan)return `<li class="item wait"><span class="iq">${head}</span><span class="tagx tag-soon">SOON</span></li>`;
     if(!p.votes)return `<li class="item wait${p.post?" hx":""}"><span class="iq">${head}</span><span class="tagx tag-live">LIVE</span>${p.post?xBtn(p,true):""}</li>`;
     return `<li class="item"><details${sample&&i===0?" open":""}><summary><span class="iq">${head}</span>${p.final===false?'<span class="tagx tag-mid">LIVE</span>':""}<span class="ic">${n(p.total)}票</span></summary>
-      <div class="ibody">${result(p,false)}${totalLine(p)}${kComment(p)}${voices(p)}</div></details></li>`;
+      <div class="ibody">${result(p,false)}${totalLine(p)}${lkBtn(p)}${kComment(p)}${voices(p)}</div></details></li>`;
   };
   const tagsHtml=t=>t.tags&&t.tags.length?`<span class="ttags">${t.tags.map(g=>`<span>#${esc(g)}</span>`).join("")}</span>`:"";
   const no=(k,i)=>String(k-i).padStart(2,"0");
@@ -559,6 +563,18 @@ const xv=t=>t.xvoices&&t.xvoices.length?`<div class="xv"><p class="xvh"><span>VO
     let k=0,km=0,ke=0,ku=0;document.querySelectorAll("#results .topic,#topics .topic").forEach(c=>{const show=!g||c.dataset.tags.split("|").includes(g);c.hidden=!show;if(show&&!c.classList.contains("sample")){if(c.classList.contains("upc"))ku++;else{k++;c.classList.contains("ev")?ke++:km++}}});
     document.getElementById("tcount").textContent=k;document.getElementById("mcount").textContent=km;document.getElementById("ecount").textContent=ke;document.getElementById("ucount").textContent=ku;
     document.getElementById("mhead").hidden=!km&&!!g;document.getElementById("ehead").hidden=!ke;document.getElementById("uhead").hidden=!ku;});
+  // いいね（GoatCounterのイベントで数える）
+  if(GC){
+    const g=document.createElement("script");g.async=true;g.dataset.goatcounter=`https://${GC}.goatcounter.com/count`;g.src="//gc.zgo.at/count.js";document.head.appendChild(g);
+    const sv=()=>{try{return JSON.parse(localStorage.getItem("jsapo-likes")||"{}")}catch(e){return{}}};
+    const load=b=>fetch(`https://${GC}.goatcounter.com/counter/${b.dataset.id}.json`).then(r=>r.ok?r.json():{count:"0"}).then(j=>{b.dataset.n=String(j.count).replace(/\D/g,"")||"0";draw(b)}).catch(()=>{b.dataset.n="0";draw(b)});
+    const draw=b=>{b.querySelector("b").textContent=b.dataset.n;b.classList.toggle("on",!!sv()[b.dataset.id])};
+    document.querySelectorAll(".lk").forEach(load);
+    document.addEventListener("click",e=>{const b=e.target.closest(".lk");if(!b)return;const m=sv();if(m[b.dataset.id])return;
+      m[b.dataset.id]=1;try{localStorage.setItem("jsapo-likes",JSON.stringify(m))}catch(x){}
+      b.dataset.n=String(Number(b.dataset.n||0)+1);draw(b);
+      if(window.goatcounter&&goatcounter.count)goatcounter.count({path:b.dataset.id,title:"いいね",event:true})});
+  }
 })();
 </script>
 </body></html>
