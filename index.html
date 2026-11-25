@@ -475,6 +475,7 @@ const banner=t=>{if(!t.colors)return "";const [l,r]=t.title.split("×");
   <span class="bl">${esc(l||"")}</span><span class="bm">${t.score?`<b>${esc(t.score)}</b>`:BALL}</span><span class="br">${esc(r||"")}</span></div>`};
 const tbar=t=>`<div class="tbar"><span class="tdt">${t.date?md(t.date):""}${t.kickoff?" "+esc(t.kickoff):""}</span>${t.comp?`<span class="tcp">${esc(t.comp)}</span>`:""}</div>`;
 const tinfo=t=>`<span class="tinfo">${t.place?esc(t.place):""}</span>`;
+const FOCUS="";/* 試合ごとのページ用（make_og.mjsが入れる） */
 const GC="jsapo-vote";/* GoatCounterのコード（https://◯◯.goatcounter.com の◯◯）。空なら計測もいいねも出ない */
 const lkId=p=>"like-"+(p.post?String(p.post).split("/").pop():encodeURIComponent(p.q).slice(0,40).replace(/%/g,""));
 const lkBtn=p=>GC?`<button type="button" class="lk" data-id="${lkId(p)}">♡ いいね <b></b></button>`:"";
@@ -529,7 +530,7 @@ const xv=t=>t.xvoices&&t.xvoices.length?`<div class="xv"><p class="xvh"><span>VO
   };
   const tagsHtml=t=>t.tags&&t.tags.length?`<span class="ttags">${t.tags.map(g=>`<span>#${esc(g)}</span>`).join("")}</span>`:"";
   const no=(k,i)=>String(k-i).padStart(2,"0");
-  document.getElementById("topics").innerHTML=match.map((t,gi)=>`<div class="card topic md${t.sample?" sample":""}"${t.colors?` style="--ta:${t.colors[0]};--tb:${t.colors[1]}"`:""} data-tags="${esc((t.tags||[]).join("|"))}">${tbar(t)}${banner(t)}
+  document.getElementById("topics").innerHTML=match.map((t,gi)=>`<div id="m${(t.date||"").replace(/-/g,"")}" class="card topic md${t.sample?" sample":""}"${t.colors?` style="--ta:${t.colors[0]};--tb:${t.colors[1]}"`:""} data-tags="${esc((t.tags||[]).join("|"))}">${tbar(t)}${banner(t)}
     <div class="th"><h3>${t.sample?'<span class="tagx tag-sample">SAMPLE</span> ':""}${tinfo(t)}${t.desc?`<span class="tdesc">${esc(t.desc)}</span>`:""}${tagsHtml(t)}</h3></div>
     ${gl(t)}${t.polls.length?`<div class="polls"><p class="xvh plh"><span>お題</span><span class="pcnt">${t.polls.length}</span></p>${t.polls.map((p,k)=>pbox(p).replace('<div class="pmeta">',t.polls.length>1?`<div class="pmeta"><span class="pk">${k+1}/${t.polls.length}</span>`:'<div class="pmeta">')).join("")}</div>`:""}${lu(t)}${nw(t)}${xv(t)}</div>`).join("");
   document.getElementById("mcount").textContent=realM;
@@ -575,6 +576,8 @@ const xv=t=>t.xvoices&&t.xvoices.length?`<div class="xv"><p class="xvh"><span>VO
       b.dataset.n=String(Number(b.dataset.n||0)+1);draw(b);
       if(window.goatcounter&&goatcounter.count)goatcounter.count({path:b.dataset.id,title:"いいね",event:true})});
   }
+  // 試合ごとの専用ページ：その試合までスクロールして開く
+  if(typeof FOCUS!=="undefined"&&FOCUS){const el=document.getElementById("m"+FOCUS);if(el){el.querySelectorAll("details.item,.item details").forEach((d,i)=>{if(i===0)d.open=true});setTimeout(()=>el.scrollIntoView({block:"start"}),50)}}
 })();
 </script>
 </body></html>
